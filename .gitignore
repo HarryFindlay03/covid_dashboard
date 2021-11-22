@@ -1,0 +1,5 @@
+__pycache__/
+config.json
+covid_data.json
+covid_data_local.json
+
