@@ -22,7 +22,8 @@ def news_API_request(covid_terms="Covid COVID-19 coronavirus"):
     for article in data["articles"]:
         temp = {}
         temp["title"] = article["title"]
-        temp["content"] = article["content"]
+        temp["content"] = article["description"]
+        temp["url"] = article["url"]
         articles.append(temp)
 
     return articles

@@ -1,5 +1,6 @@
 import json
 import sched, time
+import datetime
 from uk_covid19 import Cov19API
 from flask import Flask
 
@@ -128,9 +129,15 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
             break
 
     return_dict["nation"] = "England"
-    print("test")
     return return_dict
+
 
 def schedule_covid_updates(update_interval, update_name, location=config_data["location"], location_type=config_data["location_type"]):
     """Function to add updates to a queue to then perform then"""
-    return s.enterabs(update_interval, 1, covid_API_request, (location, location_type))
+    #Finding the time difference
+    time_delta = time_until(update_interval)
+
+    pass
+
+    #NEEDS TO WORK DIFFERENTLY
+    #return s.enterabs(update_interval, 1, covid_API_request, (location, location_type))

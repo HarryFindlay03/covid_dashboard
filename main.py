@@ -1,22 +1,14 @@
 import json
 import time
 import sched, time
-from flask import Flask, render_template, request, redirect
+from datetime import datetime
+from flask import Flask, render_template, Markup, request, redirect
 from covid_data_handler import parse_csv_data, process_covid_csv_data, covid_API_request, schedule_covid_updates
 from covid_news_handling import news_API_request
 
 app = Flask(__name__)
 
 s = sched.scheduler(time.time, time.sleep)
-
-values = covid_API_request()
-articles = news_API_request()
-
-update_list = []
-
-del_articles = []
-del_updates = []
-
 
 
 @app.route('/')
@@ -27,7 +19,7 @@ def main():
                             image = 'covid_image.jpg',
                             location=values["area_name"],
                             nation_location=values["nation"],
-                            news_articles = articles,
+                            news_articles = articles[0:4],
                             updates = update_list,
                             local_7day_infections = values["seven_days_local"],
                             national_7day_infections = values["seven_days_national"],
@@ -37,6 +29,13 @@ def main():
 
 @app.route('/index', methods=['GET'])
 def update():
+    #Upadating times in update notifs
+    #NOT WORKING
+    for update in update_list:
+        temp = update["time"]
+        update["time"] = time_to_go(temp)
+        update["content"] = update["content"].replace(temp, update["time"])
+
     if request.method == 'GET':
         temp ={}
         add = False
@@ -51,10 +50,9 @@ def update():
                 if article['title'] == title:
                     pos_of_article = pos
 
-            del_articles.append(pos_of_article)
             del articles[pos_of_article]
 
-            return main()
+            return redirect('/index', code=302)
 
         if request.args.get('update_item'):
             title = request.args.get('update_item')
@@ -64,20 +62,24 @@ def update():
                 if update['title'] == title:
                     pos_of_update = pos
 
-            del_updates.append(pos_of_update)
             del update_list[pos_of_update]
 
             return main()
 
         if request.args.get('update'):
             time = request.args.get('update')
-            temp["content"] = "Time: {0}\n".format(time)
-            add = True
+            temp["time"] = time + ':00'
+            temp["content"] = "(Time Until Update: {0}) Time: {1}\n".format(time_to_go(temp["time"]), time)
             print(time)
 
         if request.args.get('two'):
+            add = True
             label = request.args.get('two')
             temp["title"] = label
+
+        if request.args.get('repeat'):
+            repeat = request.args.get('repeat')
+            temp["content"] += "Repeat"
 
         if request.args.get('covid-data'):
             temp["content"] += "Covid Data Update\n"
@@ -94,7 +96,8 @@ def update():
         #On button click -> updates list is updated
         if add == True:
             update_list.append(temp)
-            schedule_covid_updates(time, label)
+            #schedule_covid_updates(time, label)
+            return redirect('/index', code=302)
         return main()
 
     return main()
@@ -114,6 +117,18 @@ def test_process_covid_csv_data():
 #test_parse_csv_data()
 #test_process_covid_csv_data()
 
+def time_to_go(input_time):
+    #THIS NEEDS TO CHANGE, HORRIBLE STRING FORMATTING
+    input_time_obj = datetime.strptime(input_time, "%H:%M:%S")
+    now = datetime.now()
+    delta = input_time_obj - now
+    time_string = str(delta).split(',')
+    time_string = time_string[1].split('.')
+    time_string = time_string[0].split(' ')
+    time_string = time_string[1]
+    print(time_string)
+    return time_string
+
 if __name__ == "__main__":
     #parse_csv_data('nation_2021-10-28.csv')
     #data = covid_API_request()
@@ -121,5 +136,13 @@ if __name__ == "__main__":
     #schedule_covid_updates(time.time()+5, "test London")
     #schedule_covid_updates(time.time()+10, "test Exeter")
     #run_app()
+
+    values = covid_API_request()
+    articles = news_API_request()
+
+    update_list = []
+
+    for article in articles:
+        article["content"] += Markup(f"<a href={article['url']}> Read more...</a>")
 
     app.run()
