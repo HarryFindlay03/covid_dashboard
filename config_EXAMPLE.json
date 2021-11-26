@@ -1,0 +1,12 @@
+{
+    "keys":
+    {
+      "news": "<YOUR API KEY HERE>"
+    },
+    "params":
+    {
+      "nation": "England",
+      "location": "Exeter",
+      "location_type": "ltla"
+    }
+    }
