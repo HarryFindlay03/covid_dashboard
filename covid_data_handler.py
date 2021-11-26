@@ -93,7 +93,7 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
     }
 
     api = Cov19API(filters=API_filters_local, structure=cases_and_deaths_local)
-    data_local = api.get_json(save_as='covid_data_local.json')
+    data_local = api.get_json()
 
     for val in data_local['data']:
         if val['areaName'] != None:
@@ -108,7 +108,7 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
 
     #National data like hospital cases, 7 day national count and total deaths
     api = Cov19API(filters=API_filters_national, structure=cases_and_deaths_national)
-    data_national = api.get_json(save_as='covid_data.json')
+    data_national = api.get_json()
 
     #7 day national count
     for pos, val in enumerate(data_national['data']):
