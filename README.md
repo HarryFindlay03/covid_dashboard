@@ -1,6 +1,6 @@
 # covid_dashboard
 
-When this repo is forked you will see a config_EXAMPLE.json file
+Once the covid_dashboard.zip is extracted you will see a config_EXAMPLE.json file
 
 ![Image showing config_EXAMPLE.json](https://user-images.githubusercontent.com/46387503/143605914-9ffb4a3e-c676-4370-a0a4-d214c6324ac1.png)
 

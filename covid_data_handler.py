@@ -4,6 +4,7 @@ import datetime
 from uk_covid19 import Cov19API
 from flask import Flask
 
+
 s = sched.scheduler(time.time, time.sleep)
 
 config_data = {}
@@ -62,7 +63,15 @@ def process_covid_csv_data(covid_csv_data):
     return last7days_cases, int(current_hospital_cases), int(total_deaths)
 
 def covid_API_request(location=config_data["location"], location_type=config_data["location_type"]) -> dict:
-    """Function to return live data from the uk-covid19 API"""
+    """Function to return live data from the uk-covid19 API
+
+    Args:
+        location (string, optional): Location at which the API is getting data for. Defaults to config_data["location"].
+        location_type ([string], optional): Type of area e.g. region, utla or ltla. Defaults to config_data["location_type"].
+
+    Returns:
+        dict: [description]
+    """
     return_dict = dict()
     return_dict["seven_days_local"] = 0
     return_dict["seven_days_national"] = 0
@@ -135,7 +144,6 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
 def schedule_covid_updates(update_interval, update_name, location=config_data["location"], location_type=config_data["location_type"]):
     """Function to add updates to a queue to then perform then"""
     #Finding the time difference
-    time_delta = time_until(update_interval)
 
     pass
 
