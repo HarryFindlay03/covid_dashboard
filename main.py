@@ -6,9 +6,9 @@ from flask import Flask, render_template, Markup, request, redirect
 from covid_data_handler import parse_csv_data, process_covid_csv_data, covid_API_request, schedule_covid_updates
 from covid_news_handling import news_API_request
 
-#TODO: Convert time_to_go seconds into hours:minutes:seconds
 #TODO: Add scheduling, at the moment this is not working at all
 #TODO: Look at update_news function -> not really sure what this actually wants
+#TODO: Add proper formatting and styling to update notifications using request.Markup()
 
 app = Flask(__name__)
 
@@ -34,13 +34,12 @@ def main():
 @app.route('/index', methods=['GET'])
 def update():
     #Upadating times in update notifs
-    #NOT WORKING
-    '''
+    #NOT WORKING -> only works for one refresh
     for update in update_list:
-        temp = update["time"]
-        update["time"] = time_to_go(temp)
-        update["content"] = update["content"].replace(temp, update["time"])
-'''
+        new_time = time_to_go(update["original_time"])
+        update["content"] = update["content"].replace(update["time_to_go"], f"(Time until update: {new_time})")
+        update["time_to_go"] = f"(Time until update: {new_time})"
+
     if request.method == 'GET':
         temp ={}
         add = False
@@ -72,10 +71,11 @@ def update():
             return main()
 
         if request.args.get('update'):
-            time = request.args.get('update')
-            temp["time"] = time + ':00'
-            temp["content"] = "(Time Until Update: {0}) Time: {1}\n".format(time_to_go(temp["time"]), time)
-            print(time)
+            time = request.args.get('update') + ':00'
+            temp["time_to_go"] = "(Time until update: {})".format(time_to_go(time))
+            temp["original_time"] = time
+            temp["content"] = temp["time_to_go"]
+            temp["content"] += Markup(f"<br> Update Time: {time}")
 
         if request.args.get('two'):
             add = True
@@ -83,20 +83,17 @@ def update():
             temp["title"] = label
 
         if request.args.get('repeat'):
-            repeat = request.args.get('repeat')
-            temp["content"] += "Repeat"
+            #Add logic to keep adding to schedule
+            temp["repeat"] = Markup("<br> Repeating Update")
+            temp["content"] += temp["repeat"]
 
         if request.args.get('covid-data'):
-            temp["content"] += "Covid Data Update\n"
+            temp["covid_data"] = Markup("<br> Covid Data Update")
+            temp["content"] += temp["covid_data"]
 
         if request.args.get('news'):
-            temp["content"] += "News Update\n"
-
-        #Iterate through articles, check which ones have been deleted
-        #so that they are not gathered again
-
-
-        #Going to give articles again, deleted list of articles is needed
+            temp["news"] = Markup("<br>News Update")
+            temp["content"] += temp["news"]
 
         #On button click -> updates list is updated
         if add == True:
@@ -134,8 +131,7 @@ def time_to_go(input_time:str) -> str:
         (hours:minutes:seconds)
     """
     input_time_list = input_time.split(':')
-    input_hours, input_minutes = int(input_time_list[0]), int(input_time_list[1])
-    print(f"hours: {input_hours}    minutes: {input_minutes}")
+    input_hours, input_minutes, input_seconds = int(input_time_list[0]), int(input_time_list[1]), int(input_time_list[2])
 
     current_datetime = datetime.now()
     current_year = current_datetime.year
@@ -148,14 +144,14 @@ def time_to_go(input_time:str) -> str:
         current_day += 1
 
     try:
-        input_time_obj = datetime(current_year, current_month, current_day, input_hours, input_minutes, 0)
+        input_time_obj = datetime(current_year, current_month, current_day, input_hours, input_minutes, input_seconds)
     except ValueError:
         #Increasing the month by one if the increased day is over how many days are in that month
-        input_time_obj = datetime(current_year, current_month+1, 1, input_hours, input_minutes, 0)
+        input_time_obj = datetime(current_year, current_month+1, 1, input_hours, input_minutes, input_seconds)
     except ValueError:
         #If month increases out of range due to being the last day of year (31/12 -> 32/12?) 
         #then increase the year by 1 and set the date to 1st of Jan (1st month)
-        input_time_obj = datetime(current_year+1, 1, 1, input_hours, input_minutes, 0)
+        input_time_obj = datetime(current_year+1, 1, 1, input_hours, input_minutes, input_seconds)
 
     #Temp variable to store time difference before formatting
     c = input_time_obj - current_datetime
@@ -166,10 +162,6 @@ def time_to_go(input_time:str) -> str:
     time_diff_hours = total_seconds / 60 / 60
     time_diff_minutes = (time_diff_hours * 60) % 60
     time_diff_seconds = (time_diff_hours * 3600) % 60
-
-
-    print("Time Difference ->    Hours: {}    Minutes: {}    Seconds: {}"
-            .format(int(time_diff_hours), int(time_diff_minutes), int(time_diff_seconds)))
 
     return str("{}:{}:{}".format(int(time_diff_hours), int(time_diff_minutes), int(time_diff_seconds)))
 
