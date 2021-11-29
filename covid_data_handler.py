@@ -2,8 +2,9 @@ import json
 import sched, time
 from uk_covid19 import Cov19API
 from time_difference import time_to_go
+from datetime import datetime
 
-
+queue = []
 s = sched.scheduler(time.time, time.sleep)
 
 config_data = {}
@@ -71,6 +72,7 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
     Returns:
         dict: [description]
     """
+    print("COVID DATA UPDATE COMMENCING AT: {}".format(datetime.now()))
     return_dict = dict()
     return_dict["seven_days_local"] = 0
     return_dict["seven_days_national"] = 0
@@ -144,11 +146,7 @@ def schedule_covid_updates(update_interval, update_name, location=config_data["l
     """Function to add updates to a queue to then perform then"""
     #Finding the time difference in seconds
     time_delay = time_to_go(update_interval)[1]
-    print("Adding event to queue!")
-    print("Event happening in: {} seconds".format(time_delay))
-    return [time_delay, 1, test_sched, ("This is a test!",)]
-
-
-def test_sched(word:str):
-    print(word)
+    print("Adding event to queue! Event happening in: {} seconds".format(time_delay))
+    queue.append([time_delay, 1, covid_API_request, (location, location_type)])
+    return queue
 

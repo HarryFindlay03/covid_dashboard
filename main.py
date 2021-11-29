@@ -3,7 +3,7 @@ import time
 import sched, time
 from datetime import datetime
 from flask import Flask, render_template, Markup, request, redirect
-from covid_data_handler import parse_csv_data, process_covid_csv_data, covid_API_request, schedule_covid_updates, test_sched
+from covid_data_handler import parse_csv_data, process_covid_csv_data, covid_API_request, schedule_covid_updates
 from covid_news_handling import news_API_request
 from time_difference import time_to_go
 
@@ -18,6 +18,7 @@ s = sched.scheduler(time.time, time.sleep)
 
 @app.route('/')
 def main():
+    s.run(blocking=False)
     return render_template('index.html',
                             title= 'Covid Dashboard',
                             image = 'covid_image.jpg',
@@ -33,8 +34,8 @@ def main():
 
 @app.route('/index', methods=['GET'])
 def update():
-    #Upadating times in update notifs
-    #NOT WORKING -> only works for one refresh
+    s.run(blocking=False)
+    #Updating times in update notifs
     for update in update_list:
         new_time = time_to_go(update["original_time"])[0]
         update["content"] = update["content"].replace(update["time_to_go"], f"(Time until update: {new_time})")
@@ -98,15 +99,19 @@ def update():
         #On button click -> updates list is updated
         if add == True:
             update_list.append(temp)
-            e1 = schedule_covid_updates(time, label)
-            s.enter(e1[0], e1[1], e1[2], e1[3])
-            print(s.queue)
-            s.run()
+            queue = schedule_covid_updates(time, label)
+            append_sched(queue)
             return redirect('/index', code=302)
         return main()
 
     return main()
     #redirect('/', code=302)
+    
+def append_sched(queue):
+    update_num = len(update_list) - 1
+    elem = queue[update_num]
+    s.enter(elem[0], elem[1], elem[2], elem[3])
+    print(f"update num: {update_num}")
 
 
 def test_parse_csv_data():
