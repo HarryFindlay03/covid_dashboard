@@ -1,10 +1,11 @@
 import json
 import time
 import sched, time
-from datetime import datetime, timedelta
+from datetime import datetime
 from flask import Flask, render_template, Markup, request, redirect
-from covid_data_handler import parse_csv_data, process_covid_csv_data, covid_API_request, schedule_covid_updates
+from covid_data_handler import parse_csv_data, process_covid_csv_data, covid_API_request, schedule_covid_updates, test_sched
 from covid_news_handling import news_API_request
+from time_difference import time_to_go
 
 #TODO: Add scheduling, at the moment this is not working at all
 #TODO: Look at update_news function -> not really sure what this actually wants
@@ -17,7 +18,6 @@ s = sched.scheduler(time.time, time.sleep)
 
 @app.route('/')
 def main():
-    s.run(blocking=False)
     return render_template('index.html',
                             title= 'Covid Dashboard',
                             image = 'covid_image.jpg',
@@ -36,7 +36,7 @@ def update():
     #Upadating times in update notifs
     #NOT WORKING -> only works for one refresh
     for update in update_list:
-        new_time = time_to_go(update["original_time"])
+        new_time = time_to_go(update["original_time"])[0]
         update["content"] = update["content"].replace(update["time_to_go"], f"(Time until update: {new_time})")
         update["time_to_go"] = f"(Time until update: {new_time})"
 
@@ -72,7 +72,7 @@ def update():
 
         if request.args.get('update'):
             time = request.args.get('update') + ':00'
-            temp["time_to_go"] = "(Time until update: {})".format(time_to_go(time))
+            temp["time_to_go"] = "(Time until update: {})".format(time_to_go(time)[0])
             temp["original_time"] = time
             temp["content"] = temp["time_to_go"]
             temp["content"] += Markup(f"<br> Update Time: {time}")
@@ -98,7 +98,10 @@ def update():
         #On button click -> updates list is updated
         if add == True:
             update_list.append(temp)
-            #schedule_covid_updates(time, label)
+            e1 = schedule_covid_updates(time, label)
+            s.enter(e1[0], e1[1], e1[2], e1[3])
+            print(s.queue)
+            s.run()
             return redirect('/index', code=302)
         return main()
 
@@ -118,53 +121,6 @@ def test_process_covid_csv_data():
 
 #test_parse_csv_data()
 #test_process_covid_csv_data()
-
-def time_to_go(input_time:str) -> str:
-    """Function to compute time delta betweeen time of update and current time
-       It will find the difference in seconds, then convert this value to hours:minutes:seconds
-
-    Args:
-        input_time ([string]): String taken from front end html submit box with type="time"
-
-    Returns:
-        string: To be outputed into the updates notifications on the front end in format
-        (hours:minutes:seconds)
-    """
-    input_time_list = input_time.split(':')
-    input_hours, input_minutes, input_seconds = int(input_time_list[0]), int(input_time_list[1]), int(input_time_list[2])
-
-    current_datetime = datetime.now()
-    current_year = current_datetime.year
-    current_month = current_datetime.month
-    current_day = current_datetime.day
-
-    if input_hours < current_datetime.hour:
-        current_day += 1
-    elif input_hours == current_datetime.hour and input_minutes < current_datetime.minute:
-        current_day += 1
-
-    try:
-        input_time_obj = datetime(current_year, current_month, current_day, input_hours, input_minutes, input_seconds)
-    except ValueError:
-        #Increasing the month by one if the increased day is over how many days are in that month
-        input_time_obj = datetime(current_year, current_month+1, 1, input_hours, input_minutes, input_seconds)
-    except ValueError:
-        #If month increases out of range due to being the last day of year (31/12 -> 32/12?) 
-        #then increase the year by 1 and set the date to 1st of Jan (1st month)
-        input_time_obj = datetime(current_year+1, 1, 1, input_hours, input_minutes, input_seconds)
-
-    #Temp variable to store time difference before formatting
-    c = input_time_obj - current_datetime
-
-    total_seconds = c.total_seconds()
-
-    #CONVERT SECONDS TO HOURS:MINUTES:SECONDS
-    time_diff_hours = total_seconds / 60 / 60
-    time_diff_minutes = (time_diff_hours * 60) % 60
-    time_diff_seconds = (time_diff_hours * 3600) % 60
-
-    return str("{}:{}:{}".format(int(time_diff_hours), int(time_diff_minutes), int(time_diff_seconds)))
-
 
 if __name__ == "__main__":
     #parse_csv_data('nation_2021-10-28.csv')

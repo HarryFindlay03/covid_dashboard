@@ -1,8 +1,7 @@
 import json
 import sched, time
-import datetime
 from uk_covid19 import Cov19API
-from flask import Flask
+from time_difference import time_to_go
 
 
 s = sched.scheduler(time.time, time.sleep)
@@ -143,9 +142,13 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
 
 def schedule_covid_updates(update_interval, update_name, location=config_data["location"], location_type=config_data["location_type"]):
     """Function to add updates to a queue to then perform then"""
-    #Finding the time difference
+    #Finding the time difference in seconds
+    time_delay = time_to_go(update_interval)[1]
+    print("Adding event to queue!")
+    print("Event happening in: {} seconds".format(time_delay))
+    return [time_delay, 1, test_sched, ("This is a test!",)]
 
-    pass
 
-    #NEEDS TO WORK DIFFERENTLY
-    #return s.enterabs(update_interval, 1, covid_API_request, (location, location_type))
+def test_sched(word:str):
+    print(word)
+
