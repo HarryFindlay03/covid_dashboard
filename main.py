@@ -1,15 +1,20 @@
 import json
 import time
 import sched, time
+import logging
 from datetime import datetime
 from flask import Flask, render_template, Markup, request, redirect
 from covid_data_handler import parse_csv_data, process_covid_csv_data, covid_API_request, schedule_covid_updates
 from covid_news_handling import news_API_request, schedule_news_updates
 from time_difference import time_to_go
 
-#TODO: Add scheduling, at the moment this is not working at all
+#TODO: Scheduling is running at minutes and not to nearest minute
 #TODO: Look at update_news function -> not really sure what this actually wants
-#TODO: Add proper formatting and styling to update notifications using request.Markup()
+#TODO: ADD checking user inputs are correct and not accepting them if they are not
+
+#Congiguring logging
+FORMAT = logging.Formatter('%(levelname)s:%(asctime)s:%(message)s')
+logging.basicConfig(filename='program_log.log', format=FORMAT, level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -35,6 +40,7 @@ def main():
 @app.route('/index', methods=['GET'])
 def update():
     s.run(blocking=False)
+    print(s.queue)
     #TODO: Refreshing kind of breaks the scheduling
     #Updating times in update notifs
     for update in update_list:
@@ -43,17 +49,16 @@ def update():
             #Check each value 
             #Join the string back together
         #TODO: New_time creates discrepency within shown time and time of scheduled exection
-        new_time = time_to_go(update["original_time"])[0]
-        update["content"] = update["content"].replace(update["time_to_go"], f"(Time until update: {new_time})")
-        update["time_to_go"] = f"(Time until update: {new_time})"
+        new_time = time_to_go(update["original_time"])
+        update["content"] = update["content"].replace(update["time_to_go"], f"(Time until update: {new_time[0]})")
+        update["time_to_go"] = f"(Time until update: {new_time[0]})"
+        update["seconds_to_go"] = new_time[1]
 
     update_list.sort(key=sort_updates)
     events.sort(key=sort_events)
 
-
     while len(update_list) > len(s.queue):
         update_list.pop(0)
-
 
     if request.method == 'GET':
         temp ={}
@@ -92,7 +97,6 @@ def update():
             return main()
 
         if request.args.get('update'):
-            #TODO: Change this +':00' to the current second at the moment in time datetime.now().secondss
             time = request.args.get('update') + ':' + str(datetime.now().second)
             #time = request.args.get('update') + ':00'
             temp_time = time_to_go(time)
@@ -125,6 +129,7 @@ def update():
         #On button click -> updates list is updated
         if add == True:
             update_list.append(temp)
+            logging.info('PROGRAM LOG: UPDATE EVENT ADDED AT TIME: {}'.format(time))
             if covid == True and news == True:
                 queue_covid = schedule_covid_updates(time, label)
                 append_sched(queue_covid)

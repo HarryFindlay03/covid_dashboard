@@ -1,8 +1,13 @@
 import json
 import sched, time
+import logging
 from uk_covid19 import Cov19API
 from time_difference import time_to_go
 from datetime import datetime
+
+#Congiguring logging
+FORMAT = '%(levelname)s:%(asctime)s:%(message)s'
+logging.basicConfig(filename='program_log.log', format=FORMAT, level=logging.INFO)
 
 queue = []
 s = sched.scheduler(time.time, time.sleep)
@@ -72,7 +77,7 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
     Returns:
         dict: [description]
     """
-    print("COVID DATA UPDATE COMMENCING AT: {}".format(datetime.now()))
+    logging.info('PROGRAM LOG: COVID UPDATE')
     return_dict = dict()
     return_dict["seven_days_local"] = 0
     return_dict["seven_days_national"] = 0

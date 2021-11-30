@@ -1,7 +1,12 @@
 import json
 import requests
+import logging
 from datetime import datetime
 from time_difference import time_to_go
+
+#Congiguring logging
+FORMAT = '%(levelname)s:%(asctime)s:%(message)s'
+logging.basicConfig(filename='program_log.log', format=FORMAT, level=logging.INFO)
 
 with open('config.json') as f:
     data = json.load(f)
@@ -11,7 +16,7 @@ API_KEY = '&apiKey=' + data["keys"]["news"]
 queue = []
 
 def news_API_request(covid_terms="Covid COVID-19 coronavirus"):
-    print(f"NEWS UPDATE COMMENCING AT: {datetime.now()}")
+    logging.info('NEWS UPDATE')
     articles = []
     keywords = covid_terms.split()
     query = ''
