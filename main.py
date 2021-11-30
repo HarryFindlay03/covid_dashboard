@@ -35,11 +35,25 @@ def main():
 @app.route('/index', methods=['GET'])
 def update():
     s.run(blocking=False)
+    #TODO: Refreshing kind of breaks the scheduling
     #Updating times in update notifs
     for update in update_list:
+        #TODO: .zfill(1) pad 0s to the left of numbers if part is less than 10
+            #Split up time .split(':')
+            #Check each value 
+            #Join the string back together
+        #TODO: New_time creates discrepency within shown time and time of scheduled exection
         new_time = time_to_go(update["original_time"])[0]
         update["content"] = update["content"].replace(update["time_to_go"], f"(Time until update: {new_time})")
         update["time_to_go"] = f"(Time until update: {new_time})"
+
+    update_list.sort(key=sort_updates)
+    events.sort(key=sort_events)
+
+
+    while len(update_list) > len(s.queue):
+        update_list.pop(0)
+
 
     if request.method == 'GET':
         temp ={}
@@ -78,8 +92,12 @@ def update():
             return main()
 
         if request.args.get('update'):
-            time = request.args.get('update') + ':00'
-            temp["time_to_go"] = "(Time until update: {})".format(time_to_go(time)[0])
+            #TODO: Change this +':00' to the current second at the moment in time datetime.now().secondss
+            time = request.args.get('update') + ':' + str(datetime.now().second)
+            #time = request.args.get('update') + ':00'
+            temp_time = time_to_go(time)
+            temp["time_to_go"] = "(Time until update: {})".format(temp_time[0])
+            temp["seconds_to_go"] = temp_time[1]
             temp["original_time"] = time
             temp["content"] = temp["time_to_go"]
             temp["content"] += Markup(f"<br> Update Time: {time}")
@@ -111,8 +129,9 @@ def update():
                 queue_covid = schedule_covid_updates(time, label)
                 append_sched(queue_covid)
                 #RUN news update 1 second after covid update to stop conflict
-                #TODO: NOT WORKING -> TIME IS A STRING!!!!!!!
-                queue_news = schedule_news_updates(time+1, label)
+                #TODO: NOT WORKING -> IF SECOND IS LESS THAN 10 THIS WON'T work , need to pad 0s
+                time = time[:len(time)-2] + str(datetime.now().second + 1) 
+                queue_news = schedule_news_updates(time, label)
                 append_sched(queue_news)
             elif covid == True:
                 queue_covid = schedule_covid_updates(time, label)
@@ -132,6 +151,12 @@ def append_sched(queue):
     elem = queue[update_num]
     e = s.enter(elem[0], elem[1], elem[2], elem[3])
     events.append(e)
+
+def sort_updates(update: dict):
+    return update["seconds_to_go"]
+
+def sort_events(event):
+    return event.time
 
 def test_parse_csv_data():
     data = parse_csv_data('nation_2021-10-28.csv')
