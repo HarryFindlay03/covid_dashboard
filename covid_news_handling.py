@@ -1,12 +1,17 @@
 import json
 import requests
+from datetime import datetime
+from time_difference import time_to_go
 
 with open('config.json') as f:
     data = json.load(f)
 
 API_KEY = '&apiKey=' + data["keys"]["news"]
 
+queue = []
+
 def news_API_request(covid_terms="Covid COVID-19 coronavirus"):
+    print(f"NEWS UPDATE COMMENCING AT: {datetime.now()}")
     articles = []
     keywords = covid_terms.split()
     query = ''
@@ -27,3 +32,11 @@ def news_API_request(covid_terms="Covid COVID-19 coronavirus"):
         articles.append(temp)
 
     return articles
+
+def schedule_news_updates(update_interval, update_name, covid_terms="Covid COVID-19 coronavirus"):
+    """Function to add updates to a queue to then perform then"""
+    #Finding the time difference in seconds
+    time_delay = time_to_go(update_interval)[1]
+    print("Adding event to queue! Event happening in: {} seconds".format(time_delay))
+    queue.append([time_delay, 1, news_API_request, (covid_terms, )])
+    return queue

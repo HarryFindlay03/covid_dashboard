@@ -4,7 +4,7 @@ import sched, time
 from datetime import datetime
 from flask import Flask, render_template, Markup, request, redirect
 from covid_data_handler import parse_csv_data, process_covid_csv_data, covid_API_request, schedule_covid_updates
-from covid_news_handling import news_API_request
+from covid_news_handling import news_API_request, schedule_news_updates
 from time_difference import time_to_go
 
 #TODO: Add scheduling, at the moment this is not working at all
@@ -44,6 +44,8 @@ def update():
     if request.method == 'GET':
         temp ={}
         add = False
+        covid = False
+        news = False
         time = 0
         label = ''
 
@@ -69,6 +71,10 @@ def update():
 
             del update_list[pos_of_update]
 
+            #Removing event from schedule queue
+            s.cancel(events[pos_of_update])
+            del events[pos_of_update]
+            print(s.queue)
             return main()
 
         if request.args.get('update'):
@@ -89,18 +95,32 @@ def update():
             temp["content"] += temp["repeat"]
 
         if request.args.get('covid-data'):
+            covid = True
             temp["covid_data"] = Markup("<br> Covid Data Update")
             temp["content"] += temp["covid_data"]
 
         if request.args.get('news'):
+            news = True
             temp["news"] = Markup("<br>News Update")
             temp["content"] += temp["news"]
 
         #On button click -> updates list is updated
         if add == True:
             update_list.append(temp)
-            queue = schedule_covid_updates(time, label)
-            append_sched(queue)
+            if covid == True and news == True:
+                queue_covid = schedule_covid_updates(time, label)
+                append_sched(queue_covid)
+                #RUN news update 1 second after covid update to stop conflict
+                #TODO: NOT WORKING -> TIME IS A STRING!!!!!!!
+                queue_news = schedule_news_updates(time+1, label)
+                append_sched(queue_news)
+            elif covid == True:
+                queue_covid = schedule_covid_updates(time, label)
+                append_sched(queue_covid)
+            elif news == True:
+                queue_news = schedule_news_updates(time, label)
+                append_sched(queue_news)
+            print(s.queue)
             return redirect('/index', code=302)
         return main()
 
@@ -108,11 +128,10 @@ def update():
     #redirect('/', code=302)
     
 def append_sched(queue):
-    update_num = len(update_list) - 1
+    update_num = len(queue) - 1
     elem = queue[update_num]
-    s.enter(elem[0], elem[1], elem[2], elem[3])
-    print(f"update num: {update_num}")
-
+    e = s.enter(elem[0], elem[1], elem[2], elem[3])
+    events.append(e)
 
 def test_parse_csv_data():
     data = parse_csv_data('nation_2021-10-28.csv')
@@ -139,6 +158,7 @@ if __name__ == "__main__":
     articles = news_API_request()
 
     update_list = []
+    events = []
 
     for article in articles:
         article["content"] += Markup(f"<a href={article['url']}> Read more...</a>")
