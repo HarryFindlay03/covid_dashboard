@@ -35,3 +35,11 @@ If the website is not working and crashing, try changing the location_type incas
 #### Example: 
 London requires "location_type": "region"
 Exeter requires "location_type": "ltla"
+
+# SETTING UP THE VIRTUAL ENVIRONMENT AND RUNNING THE CODE
+```
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python main.py
+```

@@ -1,4 +1,7 @@
 __pycache__/
+.venv/
+*egg-info/
+.pytest_cache/
 tests/
 config.json
 program_log.log

@@ -1,23 +1,30 @@
 import json
+from threading import Thread
+import threading
 import time
 import sched, time
 from datetime import datetime
 from flask import Flask, render_template, Markup, request, redirect
-from werkzeug.datastructures import UpdateDictMixin
-from covid_data_handler import parse_csv_data, process_covid_csv_data, covid_API_request, schedule_covid_updates
+from covid_data_handler import covid_API_request, schedule_covid_updates
 from covid_news_handling import news_API_request, schedule_news_updates
 from time_difference import time_to_go
 
-#TODO: Scheduling is running at minutes and not to nearest minute -> will have to add  threading
 #TODO: Look at update_news function -> not really sure what this actually wants
-#TODO: ADD checking user inputs are correct and not accepting them if they are not
+#TODO: Fix adding events with repeats as when cancelled it messes up the program
+#TODO: Fix time to go being 00 on 59 minutes when repeating update in 24 hours
+#TODO: When deleting tasks with same name and time, make sure it deletes the correct task
 
-app = Flask(__name__)
+app = Flask(__name__)   
 
 s = sched.scheduler(time.time, time.sleep)
 
 @app.route('/')
 def home():
+    """Main flask function that renders the index.html webpage supplied on ELE
+
+    Returns:
+        [type]: return render_template
+    """
     s.run(blocking=False)
     return render_template('index.html',
                             title= 'Covid Dashboard',
@@ -48,20 +55,41 @@ def update():
     #Removing events and checking whether they are repeating
     #If events are repeating then re add them
     while len(update_list) > len(s.queue):
+        '''
         update = update_list.pop(0)
+        try:
+            if update["repeat"] == True:
+                print("Repeating this update!")
+                update_list.append(update)
+                queue = schedule_covid_updates(update["original_time"], update["title"])
+                append_sched(queue)
+                print(s.queue)
+                return home()
+        except KeyError:
+            return home()
+        '''
+        #Pop the first value and due to lists mutability save this popped value to update
+        update = update_list.pop(0)
+        '''
         if update["repeat"] == True:
-            print("Repeating this update!")
+            print("Repeating update!")
+            #When refresh runs time will be updated by for loop above
             update_list.append(update)
+            print("Original time: " + update["original_time"])
+            #Add the new event to the scheduler, #Checking for covid or news updates
             queue = schedule_covid_updates(update["original_time"], update["title"])
             append_sched(queue)
+            #Sort both the update and events queues so that the repeating update is in the right place
+            update_list.sort(key=sort_updates)
+            events.sort(key=sort_events)
             return home()
-
-
+        '''
     if request.method == 'GET':
         temp ={}
         add = False
         covid = False
         news = False
+        temp["repeat"] = False
         time = 0
         label = ''
 
@@ -89,18 +117,19 @@ def update():
 
             #Removing event from schedule queue
             s.cancel(events[pos_of_update])
+            print(s.queue)
             del events[pos_of_update]
             return home()
 
         if request.args.get('update'):
             #time = request.args.get('update') + ':' + str(datetime.now().second)
-            time = request.args.get('update') + ':00'
+            time = request.args.get('update')
             temp_time = time_to_go(time)
             temp["time_to_go"] = "(Time until update: {})".format(temp_time[0])
             temp["seconds_to_go"] = temp_time[1]
             temp["original_time"] = time
             temp["content"] = temp["time_to_go"]
-            temp["content"] += Markup(f"<br> Update Time: {time[:-3]}")
+            temp["content"] += Markup(f"<br> Update Time: {time}")
 
         if request.args.get('two'):
             add = True
@@ -108,8 +137,6 @@ def update():
             temp["title"] = label
 
         if request.args.get('repeat'):
-            #Add logic to keep adding to schedule
-            #TODO: Get repeating function working
             temp["repeat"] = True
             temp["content"] += Markup("<br> Repeating Update")
 
@@ -125,22 +152,21 @@ def update():
 
         #On button click -> updates list is updated
         if add == True:
-            update_list.append(temp)
-            if covid == True and news == True:
-                queue_covid = schedule_covid_updates(time, label)
-                append_sched(queue_covid)
-                #RUN news update 1 second after covid update to stop conflict
-                #TODO: NOT WORKING -> IF SECOND IS LESS THAN 10 THIS WON'T work , need to pad 0s
-                time = time[:len(time)-2] + str(datetime.now().second + 1) 
-                queue_news = schedule_news_updates(time, label)
-                append_sched(queue_news)
-            elif covid == True:
-                queue_covid = schedule_covid_updates(time, label)
-                append_sched(queue_covid)
-            elif news == True:
-                queue_news = schedule_news_updates(time, label)
-                append_sched(queue_news)
+            if covid == True or news == True:
+                update_list.append(temp)
+                if covid == True and news == True:
+                    queue_covid = schedule_covid_updates(time, label)
+                    append_sched(queue_covid)
+                    queue_news = schedule_news_updates(time, label)
+                    append_sched(queue_news)
+                elif covid == True:
+                    queue_covid = schedule_covid_updates(time, label)
+                    append_sched(queue_covid)
+                elif news == True:
+                    queue_news = schedule_news_updates(time, label)
+                    append_sched(queue_news)
             else:
+                print("NOT VALID UPDATE PARAMETERS (PLEASE CHOOSE ATLEAT COVID OR NEWS UPDATE!")
                 return redirect('/index', code=302)
             return redirect('/index', code=302)
         return home()
@@ -153,25 +179,13 @@ def append_sched(queue):
     elem = queue[update_num]
     e = s.enter(elem[0], elem[1], elem[2], elem[3])
     events.append(e)
+    print(s.queue)
 
 def sort_updates(update: dict):
     return update["seconds_to_go"]
 
 def sort_events(event):
     return event.time
-
-def test_parse_csv_data():
-    data = parse_csv_data('nation_2021-10-28.csv')
-    assert len (data) == 639
-
-def test_process_covid_csv_data():
-    last7days_cases, current_hospital_cases, total_deaths = process_covid_csv_data(parse_csv_data('nation_2021-10-28.csv'))
-    assert last7days_cases == 240299
-    assert current_hospital_cases == 7019
-    assert total_deaths == 141544
-
-#test_parse_csv_data()
-#test_process_covid_csv_data()
 
 if __name__ == "__main__":
     #parse_csv_data('nation_2021-10-28.csv')

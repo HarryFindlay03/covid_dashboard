@@ -21,7 +21,6 @@ with open('config.json') as f:
 
 #Returns a list of strings for the rows in the file given by csv_filename
 def parse_csv_data(csv_filename) -> list:
-    """Function that puts the data in an inputted csv and returns it in a list"""
     return_list = []
     with open(csv_filename) as f:
         for line in f:
@@ -107,7 +106,7 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
         "date": "date",
         "hospitalCases": "hospitalCases",
         "newCasesByPublishDate": "newCasesByPublishDate",
-        "cumDeaths28DaysByPublishDate": "cumDeaths28DaysByPublishDate"
+        "cumDailyNsoDeathsByDeathDate": "cumDailyNsoDeathsByDeathDate"
     }
 
     api = Cov19API(filters=API_filters_local, structure=cases_and_deaths_local)
@@ -142,8 +141,8 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
 
     #Total deaths
     for val in data_national['data']:
-        if val['cumDeaths28DaysByPublishDate'] != None:
-            return_dict['total_deaths'] = val['cumDeaths28DaysByPublishDate']
+        if val['cumDailyNsoDeathsByDeathDate'] != None:
+            return_dict['total_deaths'] = val['cumDailyNsoDeathsByDeathDate']
             break
 
     return_dict["nation"] = "England"
