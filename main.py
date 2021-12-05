@@ -9,8 +9,7 @@ from covid_data_handler import covid_API_request, schedule_covid_updates
 from covid_news_handling import news_API_request, schedule_news_updates
 from time_difference import time_to_go
 
-#TODO: Look at update_news function -> not really sure what this actually wants
-#TODO: Fix adding events with repeats as when cancelled it messes up the program
+#TODO: Add being able to delete events from the schedule!!!!!! 
 #TODO: Fix time to go being 00 on 59 minutes when repeating update in 24 hours
 #TODO: When deleting tasks with same name and time, make sure it deletes the correct task
 
@@ -23,12 +22,14 @@ def home():
     """Main flask function that renders the index.html webpage supplied on ELE
 
     Returns:
-        [type]: return render_template
+        [str]: Renders the index.html supplied on ele that is the front end for all the data that is 
+        supplied by the APIs used. 
     """
     s.run(blocking=False)
     return render_template('index.html',
                             title= 'Covid Dashboard',
                             image = 'covid_image.jpg',
+                            favicon = 'static/images/favicon-16x16.png',
                             location=values["area_name"],
                             nation_location=values["nation"],
                             news_articles = articles[0:4],
@@ -166,6 +167,12 @@ def update():
     return home()
 
 def schedule_update(update:dict):
+    """Function to check which update is needed and then run the respective scheduling function
+    either covid update or news
+
+    Args:
+        update (dict): The dictionairy that is filled with the update information that is gathered from the website
+    """
     update_func = update["update"]
     update_interval = time_to_go(update["original_time"])[1]
     title = update["title"]
@@ -174,16 +181,69 @@ def schedule_update(update:dict):
     if update_func == 'news' or update_func == 'both':
         schedule_news_updates(update_interval, title)
 
-def schedule_covid_updates(update_interval, update_name):
-    return s.enter(update_interval, 1, covid_API_request, ())
+def schedule_covid_updates(update_interval:int, update_name:str) -> sched.Event:
+    """Schedule a covid update event and re run the covid API request
 
-def schedule_news_updates(update_interval, update_name):
-    return s.enter(update_interval, 1, news_API_request, ())
+    Args:
+        update_interval (int): The time delta in seconds between the current time and the time the update is required
+        update_name (str): The name of the update, what is shown in the update title on the front end
 
-def sort_updates(update: dict):
+    Returns:
+        sched.Event: A scheduler event, an event is added to the scheduler
+    """
+    return s.enter(update_interval, 1, covid_update, ())
+
+def schedule_news_updates(update_interval:int, update_name:str) -> sched.Event:
+    """Schedule a news update event and re run the news API request
+
+    Args:
+        update_interval (int): The time delta in seconds between the current time and the time that the update is required
+        update_name (str): The name of the update, what is shown in the update title on the front end
+
+    Returns:
+        sched.Event: A scheduler event, an event is added to the scheduler
+    """
+    return s.enter(update_interval, 1, news_update, ())
+
+
+def covid_update():
+    """Function that runs the covid API request that is called by the scheduler
+
+    Returns:
+        str: Returns the home function that will rerender the html template now with the new covid data
+    """
+    values = covid_API_request()
+    return home()
+
+def news_update():
+    """Function that runs the news API request, this function is called by the scheduler
+
+    Returns:
+        str: Returns the home function that will rerender the html template now with the new news articles
+    """
+    articles = news_API_request()
+    return home()
+
+def sort_updates(update: dict) -> int:
+    """Return the seconds to go to pass to the python .sort() function
+
+    Args:   
+        update (dict): Pass in the update dictionary that is filled with the required information
+
+    Returns:
+        int: The time delta in seconds that is stored in the update dictionary
+    """
     return update["seconds_to_go"]
 
 def sort_events(event):
+    """Returns the time of the event
+
+    Args:
+        event ([sched.Event]): An event in the scheduler
+
+    Returns:
+        [Sched.Event.time]: The time value that is scored in the Sched.Event type
+    """
     return event.time
 
 if __name__ == "__main__":
