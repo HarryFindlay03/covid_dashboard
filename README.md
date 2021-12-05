@@ -36,7 +36,10 @@ If the website is not working and crashing, try changing the location_type incas
 London requires "location_type": "region"
 Exeter requires "location_type": "ltla"
 
-# SETTING UP THE VIRTUAL ENVIRONMENT AND RUNNING THE CODE
+# SETTING UP THE VIRTUAL ENVIRONMENT AND RUNNING THE CODE (MACOS)
+
+#### CD to the directory of the project in the terminal
+#### Type this code -> bravo, program should be running.
 ```
 python3 -m venv .venv
 source .venv/bin/activate
