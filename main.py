@@ -9,9 +9,7 @@ from covid_data_handler import covid_API_request, schedule_covid_updates
 from covid_news_handling import news_API_request, schedule_news_updates
 from time_difference import time_to_go
 
-#TODO: Add being able to delete events from the schedule!!!!!! 
-#TODO: Fix time to go being 00 on 59 minutes when repeating update in 24 hours
-#TODO: When deleting tasks with same name and time, make sure it deletes the correct task
+#TODO: Repeat events in the schedule
 
 app = Flask(__name__)   
 
@@ -51,40 +49,16 @@ def update():
         update["seconds_to_go"] = new_time[1]
 
     update_list.sort(key=sort_updates)
-    events.sort(key=sort_events)
 
     #Removing events and checking whether they are repeating
     #If events are repeating then re add them
     while len(update_list) > len(s.queue):
-        '''
-        update = update_list.pop(0)
-        try:
-            if update["repeat"] == True:
-                print("Repeating this update!")
-                update_list.append(update)
-                queue = schedule_covid_updates(update["original_time"], update["title"])
-                append_sched(queue)
-                print(s.queue)
-                return home()
-        except KeyError:
-            return home()
-        '''
         #Pop the first value and due to lists mutability save this popped value to update
         update = update_list.pop(0)
-        '''
-        if update["repeat"] == True:
-            print("Repeating update!")
-            #When refresh runs time will be updated by for loop above
-            update_list.append(update)
-            print("Original time: " + update["original_time"])
-            #Add the new event to the scheduler, #Checking for covid or news updates
-            queue = schedule_covid_updates(update["original_time"], update["title"])
-            append_sched(queue)
-            #Sort both the update and events queues so that the repeating update is in the right place
-            update_list.sort(key=sort_updates)
-            events.sort(key=sort_events)
-            return home()
-        '''
+        #Checking whether this update should be repeated
+        #IF it should be repeated THEN re add it to the update_list and the scheduler
+
+
     if request.method == 'GET':
         temp ={}
         add = False
@@ -116,10 +90,11 @@ def update():
 
             del update_list[pos_of_update]
 
-            #Removing event from schedule queue
-            s.cancel(events[pos_of_update])
+            #Removing event from schedule and then events dictionairy
+            s.cancel(events[title])
             print(s.queue)
-            del events[pos_of_update]
+            del events[title]
+
             return home()
 
         if request.args.get('update'):
@@ -155,11 +130,22 @@ def update():
 
         #On button click -> updates list is updated
         if add == True:
+            same_name = False
             if covid == True or news == True:
-                update_list.append(temp)
-                if covid == True and news == True:
-                    temp["update"] = 'both'
-                schedule_update(temp)
+                #Not allowing 2 updates with the same name
+                for update in update_list:
+                    if update["title"] == temp["title"]:
+                        #THIS CAN BE LOGGED
+                        same_name = True
+                if same_name == False:
+                    update_list.append(temp)
+                    if covid == True and news == True:
+                        temp["update"] = 'both'
+                    schedule_update(temp)
+                    return redirect('/index', code=302)
+                else:
+                    return redirect('/index', code=302)
+
             else:
                 return redirect('/index', code=302)
         return home()
@@ -177,11 +163,13 @@ def schedule_update(update:dict):
     update_interval = time_to_go(update["original_time"])[1]
     title = update["title"]
     if update_func == 'covid' or update_func == 'both':
-        schedule_covid_updates(update_interval, title)
+        covid_event = schedule_covid_updates(update_interval, title)
+        events.update(covid_event)
     if update_func == 'news' or update_func == 'both':
-        schedule_news_updates(update_interval, title)
+        news_event = schedule_news_updates(update_interval, title)
+        events.update(news_event)
 
-def schedule_covid_updates(update_interval:int, update_name:str) -> sched.Event:
+def schedule_covid_updates(update_interval:int, update_name:str) -> str:
     """Schedule a covid update event and re run the covid API request
 
     Args:
@@ -191,9 +179,12 @@ def schedule_covid_updates(update_interval:int, update_name:str) -> sched.Event:
     Returns:
         sched.Event: A scheduler event, an event is added to the scheduler
     """
-    return s.enter(update_interval, 1, covid_update, ())
+    temp = {}
+    e = s.enter(update_interval, 1, covid_update, ())
+    temp[update_name] = e
+    return temp
 
-def schedule_news_updates(update_interval:int, update_name:str) -> sched.Event:
+def schedule_news_updates(update_interval:int, update_name:str) -> str:
     """Schedule a news update event and re run the news API request
 
     Args:
@@ -203,26 +194,29 @@ def schedule_news_updates(update_interval:int, update_name:str) -> sched.Event:
     Returns:
         sched.Event: A scheduler event, an event is added to the scheduler
     """
-    return s.enter(update_interval, 1, news_update, ())
+    temp = {}
+    e = s.enter(update_interval, 1, news_update, ())
+    temp[update_name] = e
+    return temp
 
 
 def covid_update():
     """Function that runs the covid API request that is called by the scheduler
 
     Returns:
-        str: Returns the home function that will rerender the html template now with the new covid data
+        Response: Redirect the user to the index page, so that the relevant updates can take place
     """
     values = covid_API_request()
-    return home()
+    return redirect('/index', code=302)
 
 def news_update():
     """Function that runs the news API request, this function is called by the scheduler
 
     Returns:
-        str: Returns the home function that will rerender the html template now with the new news articles
+        Response: Redirect the user to the index page, so that the relevant updates can take place
     """
     articles = news_API_request()
-    return home()
+    return redirect('/index', code=302)
 
 def sort_updates(update: dict) -> int:
     """Return the seconds to go to pass to the python .sort() function
@@ -258,7 +252,7 @@ if __name__ == "__main__":
     articles = news_API_request()
 
     update_list = []
-    events = []
+    events = {}
 
     for article in articles:
         article["content"] += Markup(f"<a href={article['url']}> Read more...</a>")
