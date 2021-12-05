@@ -142,11 +142,13 @@ def update():
 
         if request.args.get('covid-data'):
             covid = True
+            temp["update"] = 'covid'
             temp["covid_data"] = Markup("<br> Covid Data Update")
             temp["content"] += temp["covid_data"]
 
         if request.args.get('news'):
             news = True
+            temp["update"] = 'news'
             temp["news"] = Markup("<br>News Update")
             temp["content"] += temp["news"]
 
@@ -155,31 +157,28 @@ def update():
             if covid == True or news == True:
                 update_list.append(temp)
                 if covid == True and news == True:
-                    queue_covid = schedule_covid_updates(time, label)
-                    append_sched(queue_covid)
-                    queue_news = schedule_news_updates(time, label)
-                    append_sched(queue_news)
-                elif covid == True:
-                    queue_covid = schedule_covid_updates(time, label)
-                    append_sched(queue_covid)
-                elif news == True:
-                    queue_news = schedule_news_updates(time, label)
-                    append_sched(queue_news)
+                    temp["update"] = 'both'
+                schedule_update(temp)
             else:
-                print("NOT VALID UPDATE PARAMETERS (PLEASE CHOOSE ATLEAT COVID OR NEWS UPDATE!")
                 return redirect('/index', code=302)
-            return redirect('/index', code=302)
         return home()
 
     return home()
-    #redirect('/', code=302)
-    
-def append_sched(queue):
-    update_num = len(queue) - 1
-    elem = queue[update_num]
-    e = s.enter(elem[0], elem[1], elem[2], elem[3])
-    events.append(e)
-    print(s.queue)
+
+def schedule_update(update:dict):
+    update_func = update["update"]
+    update_interval = time_to_go(update["original_time"])[1]
+    title = update["title"]
+    if update_func == 'covid' or update_func == 'both':
+        schedule_covid_updates(update_interval, title)
+    if update_func == 'news' or update_func == 'both':
+        schedule_news_updates(update_interval, title)
+
+def schedule_covid_updates(update_interval, update_name):
+    return s.enter(update_interval, 1, covid_API_request, ())
+
+def schedule_news_updates(update_interval, update_name):
+    return s.enter(update_interval, 1, news_API_request, ())
 
 def sort_updates(update: dict):
     return update["seconds_to_go"]
