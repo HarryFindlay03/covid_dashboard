@@ -1,15 +1,12 @@
-import json
-from threading import Thread
-import threading
-import time
 import sched, time
-from datetime import datetime
 from flask import Flask, render_template, Markup, request, redirect
 from covid_data_handler import covid_API_request, schedule_covid_updates
 from covid_news_handling import news_API_request, schedule_news_updates
 from time_difference import time_to_go
 
-#TODO: Repeat events in the schedule
+#TODO: Tidy up repeats
+    # The website has to do its own http refresh for queue to be cleared and a repeated event added
+        #This currently works
 
 app = Flask(__name__)   
 
@@ -57,6 +54,11 @@ def update():
         update = update_list.pop(0)
         #Checking whether this update should be repeated
         #IF it should be repeated THEN re add it to the update_list and the scheduler
+        if update["repeat"] == True:
+            update_list.append(update)
+            schedule_update(update)
+            #returning to /index makes the code infinetly repeat this for some reason
+            return home()
 
 
     if request.method == 'GET':
@@ -161,6 +163,7 @@ def schedule_update(update:dict):
     """
     update_func = update["update"]
     update_interval = time_to_go(update["original_time"])[1]
+    print("Time to go until update: {}".format(update_interval))
     title = update["title"]
     if update_func == 'covid' or update_func == 'both':
         covid_event = schedule_covid_updates(update_interval, title)
@@ -168,6 +171,9 @@ def schedule_update(update:dict):
     if update_func == 'news' or update_func == 'both':
         news_event = schedule_news_updates(update_interval, title)
         events.update(news_event)
+    
+    print("Adding event: ")
+    print(s.queue)
 
 def schedule_covid_updates(update_interval:int, update_name:str) -> str:
     """Schedule a covid update event and re run the covid API request
@@ -228,17 +234,6 @@ def sort_updates(update: dict) -> int:
         int: The time delta in seconds that is stored in the update dictionary
     """
     return update["seconds_to_go"]
-
-def sort_events(event):
-    """Returns the time of the event
-
-    Args:
-        event ([sched.Event]): An event in the scheduler
-
-    Returns:
-        [Sched.Event.time]: The time value that is scored in the Sched.Event type
-    """
-    return event.time
 
 if __name__ == "__main__":
     #parse_csv_data('nation_2021-10-28.csv')
