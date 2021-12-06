@@ -40,10 +40,9 @@ def news_API_request(covid_terms="Covid COVID-19 coronavirus"):
 
     return articles
 
-def schedule_news_updates(update_interval, update_name, covid_terms="Covid COVID-19 coronavirus"):
-    """Function to add updates to a queue to then perform then"""
-    #Finding the time difference in seconds
-    time_delay = time_to_go(update_interval)[1]
-    print("Adding event to queue! Event happening in: {} seconds".format(time_delay))
-    queue.append([time_delay, 1, news_API_request, (covid_terms, )])
-    return queue
+def update_news(testing='false'):
+    if testing == 'false':
+        articles = news_API_request()
+        return articles
+    elif testing == 'test':
+        pass

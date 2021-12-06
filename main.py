@@ -1,12 +1,13 @@
 import sched, time
 from flask import Flask, render_template, Markup, request, redirect
-from covid_data_handler import covid_API_request, schedule_covid_updates
-from covid_news_handling import news_API_request, schedule_news_updates
+from covid_data_handler import covid_API_request
+from covid_news_handling import news_API_request, update_news
 from time_difference import time_to_go
 
 #TODO: Tidy up repeats
     # The website has to do its own http refresh for queue to be cleared and a repeated event added
         #This currently works
+    #I want it to refresh each time a new update goes
 
 app = Flask(__name__)   
 
@@ -57,7 +58,8 @@ def update():
         if update["repeat"] == True:
             update_list.append(update)
             schedule_update(update)
-            #returning to /index makes the code infinetly repeat this for some reason
+            #returning to /index makes the code infinetly repeat this for some reason, why does this happen?
+            #Some sort of check schedule function to see whether the event has completed? 
             return home()
 
 
@@ -163,7 +165,6 @@ def schedule_update(update:dict):
     """
     update_func = update["update"]
     update_interval = time_to_go(update["original_time"])[1]
-    print("Time to go until update: {}".format(update_interval))
     title = update["title"]
     if update_func == 'covid' or update_func == 'both':
         covid_event = schedule_covid_updates(update_interval, title)
@@ -186,7 +187,7 @@ def schedule_covid_updates(update_interval:int, update_name:str) -> str:
         sched.Event: A scheduler event, an event is added to the scheduler
     """
     temp = {}
-    e = s.enter(update_interval, 1, covid_update, ())
+    e = s.enter(update_interval, 1, get_covid, ())
     temp[update_name] = e
     return temp
 
@@ -201,13 +202,13 @@ def schedule_news_updates(update_interval:int, update_name:str) -> str:
         sched.Event: A scheduler event, an event is added to the scheduler
     """
     temp = {}
-    e = s.enter(update_interval, 1, news_update, ())
+    e = s.enter(update_interval, 1, get_news, ())
     temp[update_name] = e
     return temp
 
 
-def covid_update():
-    """Function that runs the covid API request that is called by the scheduler
+def get_covid():
+    """Function that runs the covid API request that is called by the scheduler.
 
     Returns:
         Response: Redirect the user to the index page, so that the relevant updates can take place
@@ -215,14 +216,19 @@ def covid_update():
     values = covid_API_request()
     return redirect('/index', code=302)
 
-def news_update():
-    """Function that runs the news API request, this function is called by the scheduler
+def get_news():
+    """Function that runs the news API request via the update_news() function from covid_news_handling, 
+    this function is called by the scheduler.
 
     Returns:
         Response: Redirect the user to the index page, so that the relevant updates can take place
     """
-    articles = news_API_request()
+    #TODO: NOTE news should be updated at a different interval to covid data?
+    #TODO: Remember deleted articles
+    #Uses update_news function from covid_news_handling as per CA spec
+    articles = update_news()
     return redirect('/index', code=302)
+
 
 def sort_updates(update: dict) -> int:
     """Return the seconds to go to pass to the python .sort() function
@@ -236,13 +242,6 @@ def sort_updates(update: dict) -> int:
     return update["seconds_to_go"]
 
 if __name__ == "__main__":
-    #parse_csv_data('nation_2021-10-28.csv')
-    #data = covid_API_request()
-    #print(json.dumps(data, indent=4))
-    #schedule_covid_updates(time.time()+5, "test London")
-    #schedule_covid_updates(time.time()+10, "test Exeter")
-    #run_app()
-
     values = covid_API_request()
     articles = news_API_request()
 
