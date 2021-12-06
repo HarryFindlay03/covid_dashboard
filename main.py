@@ -4,11 +4,6 @@ from covid_data_handler import covid_API_request
 from covid_news_handling import news_API_request, update_news
 from time_difference import time_to_go
 
-#TODO: Tidy up repeats
-    # The website has to do its own http refresh for queue to be cleared and a repeated event added
-        #This currently works
-    #I want it to refresh each time a new update goes
-
 app = Flask(__name__)   
 
 s = sched.scheduler(time.time, time.sleep)
