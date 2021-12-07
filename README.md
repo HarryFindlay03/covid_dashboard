@@ -46,3 +46,34 @@ source .venv/bin/activate
 pip install -r requirements.txt
 python main.py
 ```
+
+# RUNNING PYTEST
+For the tests to run correctly and the modules to be found you have to set up the python module
+
+For this, make sure you are in your virtual environment
+- Denoted by a (.venv) at the start of the line in the terminal
+
+Then type:
+
+```
+pip install -e .
+```
+
+This code is installing the module into itself by running the given *setup.py* file.
+
+``` python
+from setuptools import setup, find_packages
+
+setup(name="covid_dashboard", packages=find_packages())
+```
+
+Now making sure you are in the root of the project directory
+- running pwd should output something ending with */covid_dashboard*
+
+Type:
+
+```
+pytest
+```
+
+Then all the tests should run!
