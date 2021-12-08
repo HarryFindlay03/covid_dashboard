@@ -1,20 +1,27 @@
-import sched, time
+"""Main function that runs the flask code and drives the dashboard"""
+import sched
+import time
+import logging
 from flask import Flask, render_template, Markup, request, redirect
 from covid_data_handler import covid_API_request
 from covid_news_handling import news_API_request, update_news
 from time_difference import time_to_go
 
-app = Flask(__name__)   
+app = Flask(__name__)
 
 s = sched.scheduler(time.time, time.sleep)
+
+#Configuring logging
+FORMAT = '%(levelname)s: %(asctime)s: %(message)s'
+logging.basicConfig(filename='program_log.log', format=FORMAT, level=logging.INFO)
 
 @app.route('/')
 def home():
     """Main flask function that renders the index.html webpage supplied on ELE
 
     Returns:
-        [str]: Renders the index.html supplied on ele that is the front end for all the data that is 
-        supplied by the APIs used. 
+        [str]: Renders the index.html supplied on ele that is the front end for all the data that is
+        supplied by the APIs used.
     """
     s.run(blocking=False)
     return render_template('index.html',
@@ -53,9 +60,10 @@ def update():
         if update["repeat"] == True:
             update_list.append(update)
             schedule_update(update)
-            #returning to /index makes the code infinetly repeat this for some reason, why does this happen?
-            #Some sort of check schedule function to see whether the event has completed? 
+            logging.info("REPEATING UPDATE IN 24 HOURS")
             return home()
+
+        logging.info("UPDATE COMPLETED AND REMOVED FROM LIST")
 
 
     if request.method == 'GET':
@@ -91,13 +99,11 @@ def update():
 
             #Removing event from schedule and then events dictionairy
             s.cancel(events[title])
-            print(s.queue)
             del events[title]
-
+            logging.info(f'UPDATE DELETED: {events[title]}')
             return home()
 
         if request.args.get('update'):
-            #time = request.args.get('update') + ':' + str(datetime.now().second)
             time = request.args.get('update')
             temp_time = time_to_go(time)
             temp["time_to_go"] = "(Time until update: {})".format(temp_time[0])
@@ -114,6 +120,7 @@ def update():
         if request.args.get('repeat'):
             temp["repeat"] = True
             temp["content"] += Markup("<br> Repeating Update")
+            logging.info('REPEATING UPDATE QUEUED')
 
         if request.args.get('covid-data'):
             covid = True
@@ -134,7 +141,7 @@ def update():
                 #Not allowing 2 updates with the same name
                 for update in update_list:
                     if update["title"] == temp["title"]:
-                        #THIS CAN BE LOGGED
+                        logging.warning("SAME NAME ENTERED, RELOADING FORM")
                         same_name = True
                 if same_name == False:
                     update_list.append(temp)
@@ -156,7 +163,8 @@ def schedule_update(update:dict):
     either covid update or news
 
     Args:
-        update (dict): The dictionairy that is filled with the update information that is gathered from the website
+        update (dict): The dictionairy that is filled with the update information that is gathered
+        from the website
     """
     update_func = update["update"]
     update_interval = time_to_go(update["original_time"])[1]
@@ -167,38 +175,41 @@ def schedule_update(update:dict):
     if update_func == 'news' or update_func == 'both':
         news_event = schedule_news_updates(update_interval, title)
         events.update(news_event)
-    
-    print("Adding event: ")
-    print(s.queue)
 
 def schedule_covid_updates(update_interval:int, update_name:str) -> str:
     """Schedule a covid update event and re run the covid API request
 
     Args:
-        update_interval (int): The time delta in seconds between the current time and the time the update is required
-        update_name (str): The name of the update, what is shown in the update title on the front end
+        update_interval (int): The time delta in seconds between the current time and
+        the time the update is required.
+        update_name (str): The name of the update, what is shown in the update title
+        on the front end
 
     Returns:
         sched.Event: A scheduler event, an event is added to the scheduler
     """
     temp = {}
-    e = s.enter(update_interval, 1, get_covid, ())
-    temp[update_name] = e
+    event = s.enter(update_interval, 1, get_covid, ())
+    temp[update_name] = event
+    logging.info(f'COVID UPDATE QUEUED: {update_name}')
     return temp
 
 def schedule_news_updates(update_interval:int, update_name:str) -> str:
     """Schedule a news update event and re run the news API request
 
     Args:
-        update_interval (int): The time delta in seconds between the current time and the time that the update is required
-        update_name (str): The name of the update, what is shown in the update title on the front end
+        update_interval (int): The time delta in seconds between the current time
+        and the time that the update is required
+        update_name (str): The name of the update, what is shown in the
+        update title on the front end
 
     Returns:
         sched.Event: A scheduler event, an event is added to the scheduler
     """
     temp = {}
-    e = s.enter(update_interval, 1, get_news, ())
-    temp[update_name] = e
+    event = s.enter(update_interval, 1, get_news, ())
+    temp[update_name] = event
+    logging.info(f'NEWS UPDATE QUEUED: {update_name}')
     return temp
 
 
@@ -212,14 +223,12 @@ def get_covid():
     return redirect('/index', code=302)
 
 def get_news():
-    """Function that runs the news API request via the update_news() function from covid_news_handling, 
-    this function is called by the scheduler.
+    """Function that runs the news API request via the update_news() function from
+    covid_news_handling, this function is called by the scheduler.
 
     Returns:
         Response: Redirect the user to the index page, so that the relevant updates can take place
     """
-    #TODO: NOTE news should be updated at a different interval to covid data?
-    #TODO: Remember deleted articles
     #Uses update_news function from covid_news_handling as per CA spec
     articles = update_news()
     return redirect('/index', code=302)
@@ -228,7 +237,7 @@ def get_news():
 def sort_updates(update: dict) -> int:
     """Return the seconds to go to pass to the python .sort() function
 
-    Args:   
+    Args:
         update (dict): Pass in the update dictionary that is filled with the required information
 
     Returns:

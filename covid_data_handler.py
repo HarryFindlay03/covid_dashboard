@@ -84,7 +84,7 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
     Returns:
         dict: [description]
     """
-    logging.info('COVID UPDATE')
+    logging.info('COVID UPDATE COMPLETED')
     return_dict = {}
     return_dict["seven_days_local"] = 0
     return_dict["seven_days_national"] = 0
@@ -152,4 +152,3 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
 
     return_dict["nation"] = "England"
     return return_dict
-    

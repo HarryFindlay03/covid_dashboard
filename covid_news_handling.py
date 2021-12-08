@@ -25,7 +25,7 @@ def news_API_request(covid_terms="Covid COVID-19 coronavirus") -> list:
     Returns:
         list: List of articles returned from the request
     """
-    logging.info('NEWS UPDATE')
+    logging.info('NEWS UPDATE COMPLETED')
     articles = []
     keywords = covid_terms.split()
     query = ''
