@@ -23,6 +23,29 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Setting up the module (inside the virtual environment):
+We now need to make sure the python module is set up properly this helps us with later things like testing.
+
+To do this make sure you are in the root folder of the project in the terminal(*/covid_dashboard*) as well as in the virtual environment.
+
+Type the command:
+
+```
+pip install -e .
+```
+
+(Making sure to include the full stop at the end!)
+
+This command will run the setup.py file that is in the project.
+
+This file looks like:
+
+```python
+from setuptools import setup, find_packages
+
+setup(name="covid_dashboard", packages=find_packages())
+```
+
 #### Sidenote
 To deactivate the virtual environment, type:
 ```
@@ -62,31 +85,16 @@ Testing files inlcude:
 - test_covid_news_handling.py which tests functions in the covid_news_handling.py file
 - test_time_difference.py which tests functions in the time_difference.py file
 
-Make sure you are still in your virtual environment.
+**Make sure you restart your virtual environment**
 
-We now need to make sure the python module is set up properly to run the testing.
-
-To do this make sure you are in the root folder of the project in the terminal(*/covid_dashboard*) as well as in the virtual environment.
-
-Type the command:
+Do this by typing:
 
 ```
-pip install -e .
+deactivate
+source .venv/bin/activate
 ```
 
-(Making sure to include the full stop at the end!)
-
-This command will run the setup.py file that is in the project.
-
-This file looks like:
-
-```python
-from setuptools import setup, find_packages
-
-setup(name="covid_dashboard", packages=find_packages())
-```
-
-Now pytest will work, make sure you are still in your root directory and run the command in the terminal:
+Now you can simply run the pytest command in the terminal!
 
 ```
 pytest
