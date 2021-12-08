@@ -17,15 +17,13 @@ queue = []
 def news_API_request(covid_terms="Covid COVID-19 coronavirus") -> list:
     """newsapi request that returns a list of articles got from the constructed URL
     in the function
-
     Args:
         covid_terms (str, optional): The keyword terms that are added into the URL.
         Defaults to "Covid COVID-19 coronavirus".
-
     Returns:
         list: List of articles returned from the request
     """
-    logging.info('NEWS UPDATE COMPLETED')
+    logging.info('NEWS UPDATE')
     articles = []
     keywords = covid_terms.split()
     query = ''
@@ -49,11 +47,9 @@ def news_API_request(covid_terms="Covid COVID-19 coronavirus") -> list:
 
 def update_news(testing='false') -> list:
     """Function that re runs the news API request
-
     Args:
         testing (str, optional): check whether to run the API request or not.
         Defaults to 'false'.
-
     Returns:
         list: List of news articles
     """
