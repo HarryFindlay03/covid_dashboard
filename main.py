@@ -232,6 +232,7 @@ def sort_updates(update: dict) -> int:
     return update["seconds_to_go"]
 
 if __name__ == "__main__":
+    logging.info('APP STARTING!')
     values = covid_API_request()
     articles = news_API_request()
 
@@ -240,7 +241,5 @@ if __name__ == "__main__":
 
     for article in articles:
         article["content"] += Markup(f"<a href={article['url']}> Read more...</a>")
-
-    logging.info('APP STARTING!')
 
     app.run()
