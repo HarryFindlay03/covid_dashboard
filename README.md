@@ -7,13 +7,17 @@
 Python Version: 3.9.9
 
 ## Installation (MACOS)
+```
 pip3 install -r requirements.txt
+```
 
 If this fails, these are the dependencies needed:
+```
 pip3 install flask
 pip3 install uk-covid19
 pip3 install pytest
 pip3 install pylint
+```
 
 ## Getting Started Tutorial
 In a terminal cd to the root directory of the project.
