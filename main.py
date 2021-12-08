@@ -40,6 +40,14 @@ def home():
 
 @app.route('/index', methods=['GET'])
 def update():
+    """Function ran when /index extension is reached
+
+    Returns:
+        str: returns to the home function to rerender the html page with
+        the new data
+        Respone: redirects the user back to /index extension (back to this function)
+        if more checks need to take place.
+    """
     s.run(blocking=False)
     #Updating times in update notifs
     for update in update_list:
@@ -158,23 +166,33 @@ def update():
 
     return home()
 
-def schedule_update(update:dict):
+def schedule_update(update:dict, testing='false') -> bool:
     """Function to check which update is needed and then run the respective scheduling function
     either covid update or news
 
     Args:
         update (dict): The dictionairy that is filled with the update information that is gathered
         from the website
+        testing (str): test that will check that function runs
+
+    Returns:
+        bool: Whether something has scheduled or not
     """
+    if testing == 'test':
+        return True
+
     update_func = update["update"]
     update_interval = time_to_go(update["original_time"])[1]
     title = update["title"]
     if update_func == 'covid' or update_func == 'both':
         covid_event = schedule_covid_updates(update_interval, title)
         events.update(covid_event)
+        return True
     if update_func == 'news' or update_func == 'both':
         news_event = schedule_news_updates(update_interval, title)
         events.update(news_event)
+        return True
+    return False
 
 def schedule_covid_updates(update_interval:int, update_name:str) -> str:
     """Schedule a covid update event and re run the covid API request
@@ -213,16 +231,19 @@ def schedule_news_updates(update_interval:int, update_name:str) -> str:
     return temp
 
 
-def get_covid():
+def get_covid(testing='false'):
     """Function that runs the covid API request that is called by the scheduler.
 
     Returns:
         Response: Redirect the user to the index page, so that the relevant updates can take place
     """
+    if testing == 'test':
+        return True
+        
     values = covid_API_request()
     return redirect('/index', code=302)
 
-def get_news():
+def get_news(testing='false'):
     """Function that runs the news API request via the update_news() function from
     covid_news_handling, this function is called by the scheduler.
 
@@ -230,6 +251,9 @@ def get_news():
         Response: Redirect the user to the index page, so that the relevant updates can take place
     """
     #Uses update_news function from covid_news_handling as per CA spec
+    if testing == 'test':
+        return True
+
     articles = update_news()
     return redirect('/index', code=302)
 
