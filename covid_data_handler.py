@@ -1,53 +1,57 @@
+"""Module to handle the covid API and CSV file"""
 import json
-import sched, time
-#import logging
+import sched
+import time
+import logging
 from uk_covid19 import Cov19API
-from time_difference import time_to_go
-from datetime import datetime
 
-'''
 #Congiguring logging
 FORMAT = '%(levelname)s: %(asctime)s: %(message)s'
 logging.basicConfig(filename='program_log.log', format=FORMAT, level=logging.INFO)
-'''
+
 
 queue = []
 s = sched.scheduler(time.time, time.sleep)
 
 config_data = {}
-with open('config.json') as f:
+with open('config.json', 'r', encoding='utf8') as f:
     config_data = json.load(f)
     config_data = config_data["params"]
 
-#Returns a list of strings for the rows in the file given by csv_filename
-def parse_csv_data(csv_filename) -> list:
+def parse_csv_data(csv_filename: str) -> list:
+    """Parsing a csv file to return a list of strings for the rows in the
+    given filename
+
+    Args:
+        csv_filename (str): Filename of file wanting to be parsed
+
+    Returns:
+        list: The list of strings for rows in file
+    """
     return_list = []
-    with open(csv_filename) as f:
-        for line in f:
+    with open(csv_filename, encoding='utf8') as csv_file:
+        for line in csv_file:
             return_list.append(line)
     return return_list
 
 #returns numbers of cases in 7 days, current number of hospital cases, cumulative number of deaths
-def process_covid_csv_data(covid_csv_data):
-    """Function that returns the different covid data values from inputted file"""
+def process_covid_csv_data(covid_csv_data: list) -> tuple:
+    """Returns data from the inputted csv file
+
+    Args:
+        covid_csv_data (list): Inputted csv file that data wants to be gathered from
+
+    Returns:
+        tuple: The outputted data
+    """
     last7days_cases = 0
     current_hospital_cases = 0
     total_deaths = 0
 
-    '''
-    Posistion 4 -> Cumulative total deaths
-    Position 5 -> Current hospital cases
-    Position 6 -> Deaths by specimen date
+    # Posistion 4 -> Cumulative total deaths
+    # Position 5 -> Current hospital cases
+    # Position 6 -> Deaths by specimen date
 
-    Last 7 days is gathered by summing the previous 7 days, starting from 2
-    days down as the first entry with a value is not truly reliable
-
-    Current hospital cases is gathered by getting the value from the first
-    row in the csv
-
-    total deaths is gathered by going through the rows until a value is found
-    in the total deaths column
-    '''
     #Last 7 days
     for i in range(3, 10):
         data = covid_csv_data[i].split(',')
@@ -72,15 +76,16 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
     """Function to return live data from the uk-covid19 API
 
     Args:
-        location (string, optional): Location at which the API is getting data for. Defaults to config_data["location"].
-        location_type ([string], optional): Type of area e.g. region, utla or ltla. Defaults to config_data["location_type"].
+        location (string, optional): Location at which the API is getting data for.
+        Defaults to config_data["location"].
+        location_type ([string], optional): Type of area e.g. region, utla or ltla.
+        Defaults to config_data["location_type"].
 
     Returns:
         dict: [description]
     """
-    #logging.info('PROGRAM LOG: COVID UPDATE')
-    print("COVID UPDATE COMMENCING")
-    return_dict = dict()
+    logging.info('COVID UPDATE')
+    return_dict = {}
     return_dict["seven_days_local"] = 0
     return_dict["seven_days_national"] = 0
 
@@ -113,7 +118,7 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
     data_local = api.get_json()
 
     for val in data_local['data']:
-        if val['areaName'] != None:
+        if val['areaName'] is not None:
             return_dict['area_name'] = val['areaName']
             break
 
@@ -135,25 +140,16 @@ def covid_API_request(location=config_data["location"], location_type=config_dat
 
     #Hospital cases
     for val in data_national['data']:
-        if val['hospitalCases'] != None:
+        if val['hospitalCases'] is not None:
             return_dict['hospital_cases'] = val['hospitalCases']
             break
 
     #Total deaths
     for val in data_national['data']:
-        if val['cumDailyNsoDeathsByDeathDate'] != None:
+        if val['cumDailyNsoDeathsByDeathDate'] is not None:
             return_dict['total_deaths'] = val['cumDailyNsoDeathsByDeathDate']
             break
 
     return_dict["nation"] = "England"
     return return_dict
-
-
-def schedule_covid_updates(update_interval, update_name, location=config_data["location"], location_type=config_data["location_type"]):
-    """Function to add updates to a queue to then perform then"""
-    #Finding the time difference in seconds
-    time_delay = time_to_go(update_interval)[1]
-    print("Adding event to queue! Event happening in: {} seconds".format(time_delay))
-    queue.append([time_delay, 1, covid_API_request, (location, location_type)])
-    return queue
-
+    
