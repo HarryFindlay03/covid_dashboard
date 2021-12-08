@@ -8,7 +8,8 @@ def time_to_go(input_time:str) -> tuple:
         input_time ([string]): String taken from front end html submit box with type="time"
 
     Returns:
-        tuple: 0th index being the string output for flask webpage, 1st index being the total seconds to add to the scheduler
+        tuple: 0th index being the string output for flask webpage,
+        1st index being the total seconds to add to the scheduler
     """
     input_time_list = input_time.split(':')
     input_hours, input_minutes = int(input_time_list[0]), int(input_time_list[1])
@@ -29,7 +30,7 @@ def time_to_go(input_time:str) -> tuple:
         #Increasing the month by one if the increased day is over how many days are in that month
         input_time_obj = datetime(current_year, current_month+1, 1, input_hours, input_minutes, current_datetime.second)
     except ValueError:
-        #If month increases out of range due to being the last day of year (31/12 -> 32/12?) 
+        #If month increases out of range due to being the last day of year (31/12 -> 32/12?)
         #then increase the year by 1 and set the date to 1st of Jan (1st month)
         input_time_obj = datetime(current_year+1, 1, 1, input_hours, input_minutes, current_datetime.second)
 
@@ -55,3 +56,4 @@ def time_to_go(input_time:str) -> tuple:
 
     return_str = "{}:{}"
     return [return_str.format(int(time_diff_hours), int(time_diff_minutes)), total_seconds]
+    
