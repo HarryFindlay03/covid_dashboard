@@ -31,7 +31,7 @@ To run the project:
 python3 main.py
 ```
 3. This will launch the flask application
-4. Open web browser of choice and navigate to *127.0.0.1:5000*
+4. Open web browser of choice and navigate to *127.0.0.1:5000/*
 5. You should see the covid dashboard!
 
 ### To use the dashboard:
@@ -56,9 +56,9 @@ pytest
 
 This will run all of the supplied tests!
 
-## Developer Documentation
-
 ## Details
+Author: Harry Findlay
+License: MIT License
 Github Link: https://github.com/HarryFindlay03/covid_dashboard
 
 # FOR GITHUB USERS
