@@ -1,5 +1,63 @@
 # covid_dashboard
 
+## Introduction
+2021 CA for ECM1400 where we are tasked with building a covid dashboard that displays information pulled from the uk-covid19 api and the newsapi. 
+
+## Prerequisites
+Python Version: 3.9.9
+
+## Installation (MACOS)
+pip3 install -r requirements.txt
+
+If this fails, these are the dependencies needed:
+pip3 install flask
+pip3 install uk-covid19
+pip3 install pytest
+pip3 install pylint
+
+## Getting Started Tutorial
+In a terminal cd to the root directory of the project.
+
+Running the pwd command here should end in a */covid_dashboard*
+
+To run the project:
+1. Make sure you have installed the dependencies (pip3 install -r requirements.txt)
+2. Once this have finished running type the following in the terminal:
+```
+python3 main.py
+```
+3. This will launch the flask application
+4. Open web browser of choice and navigate to *127.0.0.1:5000*
+5. You should see the covid dashboard!
+
+### To use the dashboard:
+1. Enter a time in the time box
+2. Enter a name for the update to be called
+3. Tick which options you want: repeat update, covid update, news update
+4. Click submit
+
+After clicking submit you will see a new update pop up on the left hand side of the webpage.
+
+## Testing
+The zip file will include a covid_dashboard.egg-ingo folder.
+
+This contains all of the relevant of the information needed for pytest to work so running tests should be easy...
+
+Make sure you are in the root folder of the project in the terminal(*/covid_dashboard*)
+
+Type:
+```
+pytest
+```
+
+This will run all of the supplied tests!
+
+## Developer Documentation
+
+## Details
+Github Link: https://github.com/HarryFindlay03/covid_dashboard
+
+# FOR GITHUB USERS
 Once the covid_dashboard.zip is extracted you will see a config_EXAMPLE.json file
 
 ![Image showing config_EXAMPLE.json](https://user-images.githubusercontent.com/46387503/143605914-9ffb4a3e-c676-4370-a0a4-d214c6324ac1.png)
