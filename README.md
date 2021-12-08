@@ -96,6 +96,12 @@ This will run all of the tests that have been written!
 
 (Hopefully all pass :/)
 
+## Developer Documentation
+
+This can be found at **docs/build**
+
+Open index.html in a web browser of your choice!
+
 ## Details
 __Author:__ Harry Findlay
 
