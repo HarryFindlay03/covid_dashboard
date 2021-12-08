@@ -2,6 +2,14 @@ __pycache__/
 .venv/
 *egg-info/
 .pytest_cache/
-config.json
 program_log.log
+config.json
+docs/source/
+docs/build/doctrees
+docs/build/html/_sources
+docs/build/html/_static
+docs/build/html/.buildinfo
+docs/build/html/objects.inv
+docs/make.bat
+docs/Makefile
 .DS_Store

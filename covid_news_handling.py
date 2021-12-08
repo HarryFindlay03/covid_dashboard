@@ -1,4 +1,3 @@
-"""Function that gets the news API request and updates the news."""
 import json
 import logging
 import requests
@@ -17,9 +16,11 @@ queue = []
 def news_API_request(covid_terms="Covid COVID-19 coronavirus") -> list:
     """newsapi request that returns a list of articles got from the constructed URL
     in the function
+
     Args:
-        covid_terms (str, optional): The keyword terms that are added into the URL.
+        covid_terms (str, optional): The keyword terms are added into the URL.
         Defaults to "Covid COVID-19 coronavirus".
+
     Returns:
         list: List of articles returned from the request
     """
@@ -46,10 +47,12 @@ def news_API_request(covid_terms="Covid COVID-19 coronavirus") -> list:
     return articles
 
 def update_news(testing='false') -> list:
-    """Function that re runs the news API request
+    """Function that re runs the API request
+
     Args:
-        testing (str, optional): check whether to run the API request or not.
-        Defaults to 'false'.
+        testing (str, optional): Check whether to run the api request or not
+        .Defaults to 'false'.
+
     Returns:
         list: List of news articles
     """
@@ -62,3 +65,4 @@ def update_news(testing='false') -> list:
         return test_article
     articles = news_API_request()
     return articles
+    

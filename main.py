@@ -18,6 +18,7 @@ s = sched.scheduler(time.time, time.sleep)
 @app.route('/')
 def home():
     """Main flask function that renders the index.html webpage supplied on ELE
+
     Returns:
         [str]: Renders the index.html supplied on ele that is the front end for all the data that is 
         supplied by the APIs used. 
@@ -39,6 +40,12 @@ def home():
 
 @app.route('/index', methods=['GET'])
 def update():
+    """Main update function that is ran when the /index function is reached
+
+    Returns:
+        string: Retunring home function that re renders the index.html
+        Respone: Rerunning this function when a new update is needed again
+    """
     s.run(blocking=False)
     #Updating times in update notifs
     for update in update_list:
@@ -161,6 +168,7 @@ def update():
 def schedule_update(update:dict):
     """Function to check which update is needed and then run the respective scheduling function
     either covid update or news
+
     Args:
         update (dict): The dictionairy that is filled with the update information that is gathered from the website
     """
@@ -178,9 +186,11 @@ def schedule_update(update:dict):
 
 def schedule_covid_updates(update_interval:int, update_name:str) -> str:
     """Schedule a covid update event and re run the covid API request
+
     Args:
         update_interval (int): The time delta in seconds between the current time and the time the update is required
         update_name (str): The name of the update, what is shown in the update title on the front end
+
     Returns:
         sched.Event: A scheduler event, an event is added to the scheduler
     """
@@ -205,6 +215,7 @@ def schedule_news_updates(update_interval:int, update_name:str) -> str:
 
 def get_covid():
     """Function that runs the covid API request that is called by the scheduler.
+
     Returns:
         Response: Redirect the user to the index page, so that the relevant updates can take place
     """
@@ -214,6 +225,7 @@ def get_covid():
 def get_news():
     """Function that runs the news API request via the update_news() function from covid_news_handling, 
     this function is called by the scheduler.
+
     Returns:
         Response: Redirect the user to the index page, so that the relevant updates can take place
     """
@@ -224,8 +236,10 @@ def get_news():
 
 def sort_updates(update: dict) -> int:
     """Return the seconds to go to pass to the python .sort() function
+
     Args:   
         update (dict): Pass in the update dictionary that is filled with the required information
+        
     Returns:
         int: The time delta in seconds that is stored in the update dictionary
     """

@@ -21,8 +21,10 @@ with open('config.json', 'r', encoding='utf8') as f:
 def parse_csv_data(csv_filename: str) -> list:
     """Parsing a csv file to return a list of strings for the rows in the
     given filename
+
     Args:
         csv_filename (str): Filename of file wanting to be parsed
+
     Returns:
         list: The list of strings for rows in file
     """
@@ -35,8 +37,10 @@ def parse_csv_data(csv_filename: str) -> list:
 #returns numbers of cases in 7 days, current number of hospital cases, cumulative number of deaths
 def process_covid_csv_data(covid_csv_data: list) -> tuple:
     """Returns data from the inputted csv file
+
     Args:
         covid_csv_data (list): Inputted csv file that data wants to be gathered from
+
     Returns:
         tuple: The outputted data
     """
@@ -70,11 +74,13 @@ def process_covid_csv_data(covid_csv_data: list) -> tuple:
 
 def covid_API_request(location=config_data["location"], location_type=config_data["location_type"]) -> dict:
     """Function to return live data from the uk-covid19 API
+
     Args:
         location (string, optional): Location at which the API is getting data for.
         Defaults to config_data["location"].
         location_type ([string], optional): Type of area e.g. region, utla or ltla.
         Defaults to config_data["location_type"].
+
     Returns:
         dict: [description]
     """

@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>&lt;no title&gt; &#8212; covid_dashboard 0.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p># covid_dashboard</p>
+<p>## Introduction
+2021 CA for ECM1400 where we are tasked with building a covid dashboard that displays information pulled from the uk-covid19 api and the newsapi available at <a class="reference external" href="https://newsapi.org/">https://newsapi.org/</a></p>
+<p>## Prerequisites
+Python Version: 3.9.9</p>
+<p>## Installation (MACOS)</p>
+<p>### Creating a virtual environment to run the code in:
+1. cd to the root of the project directory. A pwd command will show <em>/covid_dashboard</em> if you are in the correct place.
+2. Create a virtual environment with these two commands:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">python3</span> <span class="pre">-m</span> <span class="pre">venv</span> <span class="pre">.venv</span>
+<span class="pre">source</span> <span class="pre">.venv/bin/activate</span>
+<span class="pre">`</span></code></p>
+<ol class="arabic simple" start="3">
+<li><p>Now you can install the requirements needed in the virtual environment:</p></li>
+</ol>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span>
+<span class="pre">`</span></code></p>
+<p>#### Sidenote
+To deactivate the virtual environment, type:
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">deactivate</span>
+<span class="pre">`</span></code>
+This will exit the virtual environment.</p>
+<p>## Getting Started Tutorial
+In a terminal cd to the root directory of the project.</p>
+<p>Running the pwd command here should end in a <em>/covid_dashboard</em></p>
+<p>### To run the project:
+1. Make sure you have created the virtual environment and installed the dependencies within it, if not see the steps above.
+2. Once you are sure everything is installed correctly, run the command:
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">python</span> <span class="pre">main.py</span>
+<span class="pre">`</span></code>
+3. This will launch the flask application
+4. Open web browser of choice and navigate to <em>127.0.0.1:5000/</em>
+5. You should see the covid dashboard!</p>
+<p>### To use the dashboard:
+1. Enter a time in the time box
+2. Enter a name for the update to be called
+3. Tick which options you want: repeat update, covid update, news update
+4. Click submit</p>
+<p>After clicking submit you will see a new update pop up on the left hand side of the webpage.</p>
+<p>## Testing
+Tests are located in the <em>/tests</em> folder.</p>
+<p>Testing files inlcude:
+- test_main.py which tests functions in the main.py file
+- test_covid_data_handler.py which tests functions in the covid_data_handler.py file
+- test_covid_news_handling.py which tests functions in the covid_news_handling.py file
+- test_time_difference.py which tests functions in the time_difference.py file</p>
+<p>Make sure you are still in your virtual environment.</p>
+<p>We now need to make sure the python module is set up properly to run the testing.</p>
+<p>To do this make sure you are in the root folder of the project in the terminal(<em>/covid_dashboard</em>) as well as in the virtual environment.</p>
+<p>Type the command:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span>
+<span class="pre">`</span></code></p>
+<p>(Making sure to include the full stop at the end!)</p>
+<p>This command will run the setup.py file that is in the project.</p>
+<p>This file looks like:</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
+from setuptools import setup, find_packages</p>
+<p>setup(name=”covid_dashboard”, packages=find_packages())
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>Now pytest will work, make sure you are still in your root directory and run the command in the terminal:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">pytest</span>
+<span class="pre">`</span></code></p>
+<p>This will run all of the tests that have been written!</p>
+<p>(Hopefully all pass :/)</p>
+<p>## Details
+__Author:__ Harry Findlay</p>
+<p>__License:__ MIT License</p>
+<p>__Acknowledgements__: Matt &amp; Hugo <em>&lt;3</em></p>
+<p>__Github <a href="#id15"><span class="problematic" id="id16">Link__</span></a>: <a class="reference external" href="https://github.com/HarryFindlay03/covid_dashboard">https://github.com/HarryFindlay03/covid_dashboard</a></p>
+<p># FOR GITHUB USERS
+Once the covid_dashboard.zip is extracted you will see a config_EXAMPLE.json file</p>
+<p>![Image showing config_EXAMPLE.json](<a class="reference external" href="https://user-images.githubusercontent.com/46387503/143605914-9ffb4a3e-c676-4370-a0a4-d214c6324ac1.png">https://user-images.githubusercontent.com/46387503/143605914-9ffb4a3e-c676-4370-a0a4-d214c6324ac1.png</a>)</p>
+<p>Before this code will work we have to do a few things…</p>
+<ol class="arabic simple">
+<li><p>Navigate to <a class="reference external" href="https://newsapi.org">https://newsapi.org</a>, the webpage should look something like this</p></li>
+</ol>
+<p>![newsapi website example image](<a class="reference external" href="https://user-images.githubusercontent.com/46387503/143606404-915c164e-2747-4217-8b6a-005d52f7684f.png">https://user-images.githubusercontent.com/46387503/143606404-915c164e-2747-4217-8b6a-005d52f7684f.png</a>)</p>
+<ol class="arabic simple" start="2">
+<li><p>Click on the ‘Get API Key -&gt;’ button and follow the steps, the developer version of the API is free, so this is the one we want.</p></li>
+<li><p>Now open the config_EXAMPLE.json file with whatever program you choose.</p></li>
+<li><p>Copy the API key you just got from <a class="reference external" href="https://newsapi.org">https://newsapi.org</a> and replace ‘_YOUR API KEY GOES <a href="#id17"><span class="problematic" id="id18">HERE_</span></a>’ with the API key you have just copied.</p></li>
+</ol>
+<p>![APIKEY PLACEMENT IMAGE](<a class="reference external" href="https://user-images.githubusercontent.com/46387503/143689285-31fe84c1-ca78-4d47-9a2f-2b015d7ff36b.png">https://user-images.githubusercontent.com/46387503/143689285-31fe84c1-ca78-4d47-9a2f-2b015d7ff36b.png</a>)</p>
+<ol class="arabic simple" start="5">
+<li><p>Rename the config_EXAMPLE.json file to config.json</p></li>
+<li><p>There are other things that you can change in this file like nation (England, Scotland or Wales), location, and area.</p></li>
+<li><p>Try out different locations, do note that different locations need different location_types</p></li>
+</ol>
+<p>## location_type</p>
+<p>![PARAMS IMAGE EXAMPLE](<a class="reference external" href="https://user-images.githubusercontent.com/46387503/143689354-6c35f1de-9f9d-4c19-92e6-d452feb3c3db.png">https://user-images.githubusercontent.com/46387503/143689354-6c35f1de-9f9d-4c19-92e6-d452feb3c3db.png</a>)</p>
+<p>location_type(s)  that are available: “region”, “utla” (upper tier local authority), “ltla” (lower tier local authority)</p>
+<p>If the website is not working and crashing, try changing the location_type incase it is not correct for which location you are trying to output the data for.</p>
+<p>#### Example:
+London requires “location_type”: “region”
+Exeter requires “location_type”: “ltla”</p>
+<p># SETTING UP THE VIRTUAL ENVIRONMENT AND RUNNING THE CODE (MACOS)</p>
+<p>#### CD to the directory of the project in the terminal
+#### Type this code -&gt; bravo, program should be running.
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">python3</span> <span class="pre">-m</span> <span class="pre">venv</span> <span class="pre">.venv</span>
+<span class="pre">source</span> <span class="pre">.venv/bin/activate</span>
+<span class="pre">`</span></code></p>
+<p>You should now see a (.venv) at the start of the terminal prompt. Now type:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span>
+<span class="pre">python</span> <span class="pre">main.py</span>
+<span class="pre">`</span></code></p>
+<p># RUNNING PYTEST
+For the tests to run correctly and the modules to be found you have to set up the python module</p>
+<p>For this, make sure you are in your virtual environment
+- Denoted by a (.venv) at the start of the line in the terminal</p>
+<p>Then type:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span>
+<span class="pre">`</span></code></p>
+<p>This code is installing the module into itself by running the given <em>setup.py</em> file.</p>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a>` python
+from setuptools import setup, find_packages</p>
+<p>setup(name=”covid_dashboard”, packages=find_packages())
+<a href="#id11"><span class="problematic" id="id12">``</span></a><a href="#id13"><span class="problematic" id="id14">`</span></a></p>
+<p>Now making sure you are in the root of the project directory
+- running pwd should output something ending with <em>/covid_dashboard</em></p>
+<p>Type:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">pytest</span>
+<span class="pre">`</span></code></p>
+<p>Then all the tests should run!</p>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">covid_dashboard</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Harry Findlay.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/readme.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
