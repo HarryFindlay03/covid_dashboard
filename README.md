@@ -89,9 +89,10 @@ This will run all of the tests that have been written!
 (Hopefully all pass :/)
 
 ## Details
-Author: Harry Findlay
-License: MIT License
-Github Link: https://github.com/HarryFindlay03/covid_dashboard
+__Author:__ Harry Findlay
+__License:__ MIT License
+__Acknowledgements__: Matt & Hugo *<3*
+__Github Link__: https://github.com/HarryFindlay03/covid_dashboard
 
 # FOR GITHUB USERS
 Once the covid_dashboard.zip is extracted you will see a config_EXAMPLE.json file
