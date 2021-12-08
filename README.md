@@ -35,7 +35,7 @@ In a terminal cd to the root directory of the project.
 
 Running the pwd command here should end in a */covid_dashboard*
 
-To run the project:
+### To run the project:
 1. Make sure you have created the virtual environment and installed the dependencies within it, if not see the steps above.
 2. Once you are sure everything is installed correctly, run the command:
 ```
@@ -54,6 +54,14 @@ python main.py
 After clicking submit you will see a new update pop up on the left hand side of the webpage.
 
 ## Testing
+Tests are located in the */tests* folder.
+
+Testing files inlcude:
+- test_main.py which tests functions in the main.py file
+- test_covid_data_handler.py which tests functions in the covid_data_handler.py file
+- test_covid_news_handling.py which tests functions in the covid_news_handling.py file
+- test_time_difference.py which tests functions in the time_difference.py file
+
 Make sure you are still in your virtual environment.
 
 We now need to make sure the python module is set up properly to run the testing.
@@ -90,8 +98,11 @@ This will run all of the tests that have been written!
 
 ## Details
 __Author:__ Harry Findlay
+
 __License:__ MIT License
+
 __Acknowledgements__: Matt & Hugo *<3*
+
 __Github Link__: https://github.com/HarryFindlay03/covid_dashboard
 
 # FOR GITHUB USERS
