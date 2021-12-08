@@ -1,23 +1,34 @@
 # covid_dashboard
 
 ## Introduction
-2021 CA for ECM1400 where we are tasked with building a covid dashboard that displays information pulled from the uk-covid19 api and the newsapi. 
+2021 CA for ECM1400 where we are tasked with building a covid dashboard that displays information pulled from the uk-covid19 api and the newsapi available at https://newsapi.org/
 
 ## Prerequisites
 Python Version: 3.9.9
 
 ## Installation (MACOS)
+
+### Creating a virtual environment to run the code in:
+1. cd to the root of the project directory. A pwd command will show */covid_dashboard* if you are in the correct place.
+2. Create a virtual environment with these two commands:
+
 ```
-pip3 install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
-If this fails, these are the dependencies needed:
+3. Now you can install the requirements needed in the virtual environment:
+
 ```
-pip3 install flask
-pip3 install uk-covid19
-pip3 install pytest
-pip3 install pylint
+pip install -r requirements.txt
 ```
+
+#### Sidenote
+To deactivate the virtual environment, type:
+```
+deactivate
+```
+This will exit the virtual environment.
 
 ## Getting Started Tutorial
 In a terminal cd to the root directory of the project.
@@ -25,10 +36,10 @@ In a terminal cd to the root directory of the project.
 Running the pwd command here should end in a */covid_dashboard*
 
 To run the project:
-1. Make sure you have installed the dependencies (pip3 install -r requirements.txt)
-2. Once this have finished running type the following in the terminal:
+1. Make sure you have created the virtual environment and installed the dependencies within it, if not see the steps above.
+2. Once you are sure everything is installed correctly, run the command:
 ```
-python3 main.py
+python main.py
 ```
 3. This will launch the flask application
 4. Open web browser of choice and navigate to *127.0.0.1:5000/*
@@ -43,18 +54,39 @@ python3 main.py
 After clicking submit you will see a new update pop up on the left hand side of the webpage.
 
 ## Testing
-The zip file will include a covid_dashboard.egg-ingo folder.
+Make sure you are still in your virtual environment.
 
-This contains all of the relevant of the information needed for pytest to work so running tests should be easy...
+We now need to make sure the python module is set up properly to run the testing.
 
-Make sure you are in the root folder of the project in the terminal(*/covid_dashboard*)
+To do this make sure you are in the root folder of the project in the terminal(*/covid_dashboard*) as well as in the virtual environment.
 
-Type:
+Type the command:
+
+```
+pip install -e .
+```
+
+(Making sure to include the full stop at the end!)
+
+This command will run the setup.py file that is in the project.
+
+This file looks like:
+
+```python
+from setuptools import setup, find_packages
+
+setup(name="covid_dashboard", packages=find_packages())
+```
+
+Now pytest will work, make sure you are still in your root directory and run the command in the terminal:
+
 ```
 pytest
 ```
 
-This will run all of the supplied tests!
+This will run all of the tests that have been written!
+
+(Hopefully all pass :/)
 
 ## Details
 Author: Harry Findlay
@@ -105,6 +137,11 @@ Exeter requires "location_type": "ltla"
 ```
 python3 -m venv .venv
 source .venv/bin/activate
+```
+
+You should now see a (.venv) at the start of the terminal prompt. Now type:
+
+```
 pip install -r requirements.txt
 python main.py
 ```
